@@ -35,11 +35,11 @@ public class RoomController {
 
     /**
      * 방 종료
-     * POST /api/rooms/{roomId}/end
+     * POST /api/rooms/{roomCode}/end
      */
-    @PostMapping("/{roomId}/end")
-    public ResponseEntity<Void> endRoom(@PathVariable Long roomId) {
-        roomService.endRoom(roomId);
+    @PostMapping("/{roomCode}/end")
+    public ResponseEntity<Void> endRoom(@PathVariable String roomCode) {
+        roomService.endRoom(roomCode);
         return ResponseEntity.ok().build();
     }
 

@@ -32,8 +32,8 @@ public class ResultService {
     /**
      * 방 전체 순위 조회
      */
-    public List<RankingResponse> getRoomRanking(Long roomId) {
-        List<User> users = userRepository.findByRoomId(roomId);
+    public List<RankingResponse> getRoomRanking(String roomCode) {
+        List<User> users = userRepository.findByRoomCode(roomCode);
 
         // 최종 점수 계산 및 정렬
         List<UserWithScore> usersWithScores = users.stream()
@@ -67,7 +67,7 @@ public class ResultService {
                     .build());
         }
 
-        logger.info("Calculated rankings for room {}: {} users", roomId, rankings.size());
+        logger.info("Calculated rankings for room {}: {} users", roomCode, rankings.size());
 
         return rankings;
     }
@@ -75,7 +75,7 @@ public class ResultService {
     /**
      * 개인 결과 조회
      */
-    public UserResultResponse getUserResult(Long userId) {
+    public UserResultResponse getUserResult(String roomCode, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
 
@@ -92,7 +92,7 @@ public class ResultService {
         // 순위 조회 (없으면 계산)
         Integer rank = user.getFinalRank();
         if (rank == null) {
-            List<RankingResponse> rankings = getRoomRanking(user.getRoom().getId());
+            List<RankingResponse> rankings = getRoomRanking(roomCode);
             rank = rankings.stream()
                     .filter(r -> r.getUserId().equals(userId))
                     .findFirst()

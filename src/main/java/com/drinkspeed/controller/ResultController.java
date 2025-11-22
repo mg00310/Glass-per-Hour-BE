@@ -18,21 +18,21 @@ public class ResultController {
 
     /**
      * 개인 결과 조회
-     * GET /api/results/user/{userId}
+     * GET /api/results/room/{roomCode}/user/{userId}
      */
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<UserResultResponse> getUserResult(@PathVariable Long userId) {
-        UserResultResponse response = resultService.getUserResult(userId);
+    @GetMapping("/room/{roomCode}/user/{userId}")
+    public ResponseEntity<UserResultResponse> getUserResult(@PathVariable String roomCode, @PathVariable Long userId) {
+        UserResultResponse response = resultService.getUserResult(roomCode, userId);
         return ResponseEntity.ok(response);
     }
 
     /**
      * 방 순위 조회
-     * GET /api/results/room/{roomId}/ranking
+     * GET /api/results/room/{roomCode}/ranking
      */
-    @GetMapping("/room/{roomId}/ranking")
-    public ResponseEntity<List<RankingResponse>> getRoomRanking(@PathVariable Long roomId) {
-        List<RankingResponse> rankings = resultService.getRoomRanking(roomId);
+    @GetMapping("/room/{roomCode}/ranking")
+    public ResponseEntity<List<RankingResponse>> getRoomRanking(@PathVariable String roomCode) {
+        List<RankingResponse> rankings = resultService.getRoomRanking(roomCode);
         return ResponseEntity.ok(rankings);
     }
 }

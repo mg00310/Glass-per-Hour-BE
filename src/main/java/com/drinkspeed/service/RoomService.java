@@ -58,8 +58,7 @@ public class RoomService {
         // 방장 사용자 생성
         User host = User.builder()
                 .userName(request.getHostName())
-                .room(room)
-                .isHost(true)
+                .roomCode(roomCode)
                 .totalSojuEquivalent(0.0)
                 .build();
 
@@ -89,8 +88,7 @@ public class RoomService {
         // 사용자 생성
         User user = User.builder()
                 .userName(request.getUserName())
-                .room(room)
-                .isHost(false)
+                .roomCode(room.getRoomCode())
                 .totalSojuEquivalent(0.0)
                 .build();
 
@@ -110,24 +108,24 @@ public class RoomService {
     /**
      * 방 종료
      */
-    public void endRoom(Long roomId) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다: " + roomId));
+    public void endRoom(String roomCode) {
+        Room room = roomRepository.findByRoomCode(roomCode)
+                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다: " + roomCode));
 
         room.endRoom();
         roomRepository.save(room);
-        logger.info("Room {} ended", roomId);
+        logger.info("Room with code {} ended", roomCode);
     }
 
     /**
      * 마지막 한 명 남았는지 확인 후 자동 종료
      */
-    public boolean checkAndAutoEndRoom(Long roomId) {
-        long activeUsers = userRepository.countActiveUsersByRoomId(roomId);
+    public boolean checkAndAutoEndRoom(String roomCode) {
+        long activeUsers = userRepository.countActiveUsersByRoomCode(roomCode);
 
         if (activeUsers <= 1) {
-            endRoom(roomId);
-            logger.info("Auto-ended room {} (only 1 or 0 active users remaining)", roomId);
+            endRoom(roomCode);
+            logger.info("Auto-ended room with code {} (only 1 or 0 active users remaining)", roomCode);
             return true;
         }
 
@@ -142,7 +140,7 @@ public class RoomService {
         Room room = roomRepository.findByRoomCode(roomCode)
                 .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다: " + roomCode));
 
-        List<User> users = userRepository.findByRoomId(room.getId());
+        List<User> users = userRepository.findByRoomCode(roomCode);
 
         return RoomInfoResponse.builder()
                 .roomId(room.getId())

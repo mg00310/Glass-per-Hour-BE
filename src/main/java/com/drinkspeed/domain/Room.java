@@ -35,9 +35,7 @@ public class Room {
     @Column(nullable = false)
     private Boolean ended = false;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<User> users = new ArrayList<>();
+    
 
     @PrePersist
     protected void onCreate() {

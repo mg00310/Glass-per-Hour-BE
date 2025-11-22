@@ -22,9 +22,10 @@ public class User {
     @Column(nullable = false)
     private String userName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    private Room room;
+    @Column(nullable = false)
+    private String roomCode;
+
+    
 
     @Column(nullable = false)
     private LocalDateTime joinedAt;
@@ -48,9 +49,7 @@ public class User {
     @Column(length = 1000)
     private String funnyDescription;
 
-    @Builder.Default
-    @Column(nullable = false)
-    private Boolean isHost = false;
+    
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

@@ -11,13 +11,13 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    List<User> findByRoomIdOrderByTotalSojuEquivalentDesc(Long roomId);
+    List<User> findByRoomCodeOrderByTotalSojuEquivalentDesc(String roomCode);
 
-    @Query("SELECT COUNT(u) FROM User u WHERE u.room.id = :roomId AND u.finishedAt IS NULL")
-    long countActiveUsersByRoomId(@Param("roomId") Long roomId);
+    @Query("SELECT COUNT(u) FROM User u WHERE u.roomCode = :roomCode AND u.finishedAt IS NULL")
+    long countActiveUsersByRoomCode(@Param("roomCode") String roomCode);
 
-    List<User> findByRoomId(Long roomId);
+    List<User> findByRoomCode(String roomCode);
 
-    @Query("SELECT u FROM User u WHERE u.room.id = :roomId AND u.finishedAt IS NULL")
-    List<User> findActiveUsersByRoomId(@Param("roomId") Long roomId);
+    @Query("SELECT u FROM User u WHERE u.roomCode = :roomCode AND u.finishedAt IS NULL")
+    List<User> findActiveUsersByRoomCode(@Param("roomCode") String roomCode);
 }

@@ -31,83 +31,83 @@ public class RoomMessageController {
 
     /**
      * 잔 추가 이벤트 처리
-     * 클라이언트 → /app/room/{roomId}/drink
-     * 서버 → /topic/room/{roomId}
+     * 클라이언트 → /app/room/{roomCode}/drink
+     * 서버 → /topic/room/{roomCode}
      */
-    @MessageMapping("/room/{roomId}/drink")
-    public void handleDrinkAdd(@DestinationVariable Long roomId, DrinkAddRequest request) {
-        logger.info("Received drink add request for room {}: {}", roomId, request);
+    @MessageMapping("/room/{roomCode}/drink")
+    public void handleDrinkAdd(@DestinationVariable String roomCode, DrinkAddRequest request) {
+        logger.info("Received drink add request for room {}: {}", roomCode, request);
 
         // 잔 추가 처리
         DrinkAddResponse response = userService.addDrink(request);
 
         // 실시간 순위 업데이트
-        List<RankingResponse> rankings = resultService.getRoomRanking(roomId);
+        List<RankingResponse> rankings = resultService.getRoomRanking(roomCode);
 
         // 방의 모든 참여자에게 브로드캐스트
-        messagingTemplate.convertAndSend("/topic/room/" + roomId + "/drink", response);
-        messagingTemplate.convertAndSend("/topic/room/" + roomId + "/ranking", rankings);
+        messagingTemplate.convertAndSend("/topic/room/" + roomCode + "/drink", response);
+        messagingTemplate.convertAndSend("/topic/room/" + roomCode + "/ranking", rankings);
 
-        logger.info("Broadcasted drink add and rankings to room {}", roomId);
+        logger.info("Broadcasted drink add and rankings to room {}", roomCode);
     }
 
     /**
      * 반응 속도 테스트 이벤트 처리
-     * 클라이언트 → /app/room/{roomId}/reaction
-     * 서버 → /topic/room/{roomId}
+     * 클라이언트 → /app/room/{roomCode}/reaction
+     * 서버 → /topic/room/{roomCode}
      */
-    @MessageMapping("/room/{roomId}/reaction")
-    public void handleReactionTest(@DestinationVariable Long roomId, ReactionTestResultRequest request) {
-        logger.info("Received reaction test for room {}: {}", roomId, request);
+    @MessageMapping("/room/{roomCode}/reaction")
+    public void handleReactionTest(@DestinationVariable String roomCode, ReactionTestResultRequest request) {
+        logger.info("Received reaction test for room {}: {}", roomCode, request);
 
         // 반응 속도 기록
         userService.recordReactionTest(request.getUserId(), request.getReactionTimeMs());
 
         // 방의 모든 참여자에게 알림
-        messagingTemplate.convertAndSend("/topic/room/" + roomId + "/reaction", request);
+        messagingTemplate.convertAndSend("/topic/room/" + roomCode + "/reaction", request);
 
-        logger.info("Broadcasted reaction test to room {}", roomId);
+        logger.info("Broadcasted reaction test to room {}", roomCode);
     }
 
     /**
      * 사용자 종료 이벤트 처리
-     * 클라이언트 → /app/room/{roomId}/finish
-     * 서버 → /topic/room/{roomId}
+     * 클라이언트 → /app/room/{roomCode}/finish
+     * 서버 → /topic/room/{roomCode}
      */
-    @MessageMapping("/room/{roomId}/finish")
-    public void handleUserFinish(@DestinationVariable Long roomId, Long userId) {
-        logger.info("Received finish request for user {} in room {}", userId, roomId);
+    @MessageMapping("/room/{roomCode}/finish")
+    public void handleUserFinish(@DestinationVariable String roomCode, Long userId) {
+        logger.info("Received finish request for user {} in room {}", userId, roomCode);
 
         // 사용자 종료 처리
         userService.finishUser(userId);
 
         // 마지막 1명 남았는지 확인 및 자동 종료
-        boolean autoEnded = roomService.checkAndAutoEndRoom(roomId);
+        boolean autoEnded = roomService.checkAndAutoEndRoom(roomCode);
 
         // 실시간 순위 업데이트
-        List<RankingResponse> rankings = resultService.getRoomRanking(roomId);
+        List<RankingResponse> rankings = resultService.getRoomRanking(roomCode);
 
         // 방의 모든 참여자에게 브로드캐스트
-        messagingTemplate.convertAndSend("/topic/room/" + roomId + "/finish", userId);
-        messagingTemplate.convertAndSend("/topic/room/" + roomId + "/ranking", rankings);
+        messagingTemplate.convertAndSend("/topic/room/" + roomCode + "/finish", userId);
+        messagingTemplate.convertAndSend("/topic/room/" + roomCode + "/ranking", rankings);
 
         if (autoEnded) {
-            messagingTemplate.convertAndSend("/topic/room/" + roomId + "/autoend", true);
-            logger.info("Room {} auto-ended", roomId);
+            messagingTemplate.convertAndSend("/topic/room/" + roomCode + "/autoend", true);
+            logger.info("Room {} auto-ended", roomCode);
         }
 
-        logger.info("Broadcasted finish event to room {}", roomId);
+        logger.info("Broadcasted finish event to room {}", roomCode);
     }
 
     /**
      * 순위 요청 처리
-     * 클라이언트 → /app/room/{roomId}/ranking/request
-     * 서버 → /topic/room/{roomId}/ranking
+     * 클라이언트 → /app/room/{roomCode}/ranking/request
+     * 서버 → /topic/room/{roomCode}/ranking
      */
-    @MessageMapping("/room/{roomId}/ranking/request")
-    @SendTo("/topic/room/{roomId}/ranking")
-    public List<RankingResponse> handleRankingRequest(@DestinationVariable Long roomId) {
-        logger.info("Received ranking request for room {}", roomId);
-        return resultService.getRoomRanking(roomId);
+    @MessageMapping("/room/{roomCode}/ranking/request")
+    @SendTo("/topic/room/{roomCode}/ranking")
+    public List<RankingResponse> handleRankingRequest(@DestinationVariable String roomCode) {
+        logger.info("Received ranking request for room {}", roomCode);
+        return resultService.getRoomRanking(roomCode);
     }
 }
