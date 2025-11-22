@@ -1,0 +1,19 @@
+# Gradle
+.gradle
+build/
+bin/
+target/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
