@@ -31,11 +31,12 @@ public class Room {
     @Column
     private LocalDateTime endedAt;
 
+    /**
+     * 0: WAITING, 1: IN_PROGRESS, 2: ENDED
+     */
     @Builder.Default
     @Column(nullable = false)
-    private Boolean ended = false;
-
-    
+    private Integer status = 0;
 
     @PrePersist
     protected void onCreate() {
@@ -43,11 +44,11 @@ public class Room {
     }
 
     public void endRoom() {
-        this.ended = true;
+        this.status = 2; // ENDED
         this.endedAt = LocalDateTime.now();
     }
 
     public boolean isEnded() {
-        return ended != null && ended;
+        return this.status == 2;
     }
 }

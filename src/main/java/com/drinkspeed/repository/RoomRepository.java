@@ -14,5 +14,5 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     boolean existsByRoomCode(String roomCode);
 
-    List<Room> findByEndedFalse();
+    List<Room> findByStatusNot(Integer status);
 }

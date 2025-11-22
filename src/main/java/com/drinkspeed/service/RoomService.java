@@ -49,7 +49,7 @@ public class RoomService {
         Room room = Room.builder()
                 .roomCode(roomCode)
                 .roomName(roomName)
-                .ended(false)
+                .status(0)
                 .build();
 
         room = roomRepository.save(room);
@@ -66,7 +66,7 @@ public class RoomService {
         logger.info("Created host user: {} in room {}", request.getHostName(), roomCode);
 
         return CreateRoomResponse.builder()
-                .roomId(room.getId())
+
                 .roomCode(roomCode)
                 .roomName(roomName)
                 .hostUserId(host.getId())
@@ -98,10 +98,10 @@ public class RoomService {
         return JoinRoomResponse.builder()
                 .userId(user.getId())
                 .userName(user.getUserName())
-                .roomId(room.getId())
+
                 .roomCode(room.getRoomCode())
                 .roomName(room.getRoomName())
-                .isHost(false)
+                
                 .build();
     }
 
@@ -143,11 +143,11 @@ public class RoomService {
         List<User> users = userRepository.findByRoomCode(roomCode);
 
         return RoomInfoResponse.builder()
-                .roomId(room.getId())
+
                 .roomCode(room.getRoomCode())
                 .roomName(room.getRoomName())
                 .createdAt(room.getCreatedAt())
-                .ended(room.isEnded())
+                .status(room.getStatus())
                 .participantCount(users.size())
                 .build();
     }
@@ -157,7 +157,7 @@ public class RoomService {
      */
     @Transactional(readOnly = true)
     public List<Room> getActiveRooms() {
-        return roomRepository.findByEndedFalse();
+        return roomRepository.findByStatusNot(2); // 2: ENDED
     }
 
     /**

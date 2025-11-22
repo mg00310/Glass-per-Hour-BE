@@ -9,7 +9,7 @@ import lombok.*;
 @Builder
 public class CreateRoomResponse {
 
-    private Long roomId;
+    
 
     private String roomCode;
 

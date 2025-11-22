@@ -26,10 +26,15 @@ spring:
 server:
   port: 8080
 
+# Logging Configuration
+logging:
+  charset:
+    console: UTF-8
+
 # Gemini API Configuration
 gemini:
   api:
-    key: AIzaSyDukUUiw6dx-pvnOMnUODxma2tm-82_YJc
+    key: AIzaSyD-u260Y3vhh_Kni8zmcY-oOg7qms3gYVg
     url: https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent
 
 # Reaction Game Scheduler

@@ -13,11 +13,11 @@ public class JoinRoomResponse {
 
     private String userName;
 
-    private Long roomId;
+    
 
     private String roomCode;
 
     private String roomName;
 
-    private Boolean isHost;
+    
 }

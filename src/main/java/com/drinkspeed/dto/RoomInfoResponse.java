@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public class RoomInfoResponse {
 
-    private Long roomId;
+    
 
     private String roomCode;
 
@@ -18,7 +18,7 @@ public class RoomInfoResponse {
 
     private LocalDateTime createdAt;
 
-    private Boolean ended;
+    private Integer status;
 
     private Integer participantCount;
 }
