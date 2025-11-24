@@ -1,27 +1,57 @@
+# ===============================================
+# MySQL Configuration (주석 처리됨)
+# ===============================================
+#spring:
+#  application:
+#    name: glass-per-hour
+#
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    # TODO: 'gph'를 실제 생성한 데이터베이스(스키마) 이름으로 변경하세요.
+#    url: jdbc:mysql://localhost:3306/gph?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+#    # TODO: 'root'를 실제 MySQL 사용자 이름으로 변경하세요.
+#    username: root
+#    # TODO: 'password'를 실제 MySQL 비밀번호로 변경하세요.
+#    password: 1234
+#
+#  jpa:
+#    hibernate:
+#      # 애플리케이션 실행 시 엔티티를 기반으로 테이블을 자동 업데이트합니다.
+#      # 'create'로 변경하면 실행 시마다 테이블을 삭제하고 다시 생성합니다.
+#      ddl-auto: update
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
+#    # MySQL 버전에 맞는 Dialect(방언) 설정
+#    database-platform: org.hibernate.dialect.MySQLDialect
+
+# ===============================================
+# H2 (In-memory Database) Configuration (활성화)
+# ===============================================
 spring:
   application:
     name: glass-per-hour
 
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    # TODO: 'gph'를 실제 생성한 데이터베이스(스키마) 이름으로 변경하세요.
-    url: jdbc:mysql://localhost:3306/gph?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-    # TODO: 'root'를 실제 MySQL 사용자 이름으로 변경하세요.
-    username: root
-    # TODO: 'password'를 실제 MySQL 비밀번호로 변경하세요.
-    password: 1234
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:gph;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
 
   jpa:
     hibernate:
-      # 애플리케이션 실행 시 엔티티를 기반으로 테이블을 자동 업데이트합니다.
-      # 'create'로 변경하면 실행 시마다 테이블을 삭제하고 다시 생성합니다.
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-    # MySQL 버전에 맞는 Dialect(방언) 설정
-    database-platform: org.hibernate.dialect.MySQLDialect
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 
 server:
   port: 8080
@@ -30,11 +60,20 @@ server:
 logging:
   charset:
     console: UTF-8
+  level:
+    # =================================================================
+    # AOP 로깅 및 애플리케이션 흐름을 확인하려면 아래 레벨을 조정하세요.
+    # com.drinkspeed: INFO  -> API 요청/응답 위주로 확인
+    # com.drinkspeed: DEBUG -> 서비스 계층의 상세 로직까지 확인
+    # =================================================================
+    com.drinkspeed: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 # Gemini API Configuration
 gemini:
   api:
-    key: AIzaSyD-u260Y3vhh_Kni8zmcY-oOg7qms3gYVg
+    key: AIzaSyAYULXCQ4mKnGz6T3lyVm8emrUv9-bEWnk
     url: https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent
 
 # Reaction Game Scheduler

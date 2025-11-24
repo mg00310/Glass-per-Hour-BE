@@ -1,97 +1,69 @@
 # Glass-per-Hour 데이터베이스 스키마
 
-## 데이터베이스 개요
+이 문서는 'Glass-per-Hour' 프로젝트의 데이터베이스 스키마를 설명합니다.
+데이터베이스는 총 4개의 테이블로 구성되어 있습니다.
 
-- **데이터베이스 이름**: `gph`
-- **특징**: 사용자의 음주 관련 데이터를 기록하고, 실시간 랭킹을 제공하기 위한 데이터베이스입니다.
-
-### 테이블 요약
-
-| 테이블명          | 주요 역할                                       |
-| ----------------- | ----------------------------------------------- |
-| `rooms`           | 게임 방 정보를 저장합니다.                      |
-| `users`           | 사용자 정보를 저장합니다.                       |
-| `drink_records`   | 사용자의 음주 기록을 저장합니다.                |
-| `reaction_tests`  | 사용자의 반응 속도 테스트 결과를 저장합니다.    |
-
-### 관계 다이어그램
-
-`rooms`와 `users`는 `room_code`를 통해 논리적으로 연결되며, `users`는 `drink_records` 및 `reaction_tests`와 직접적인 관계를 맺습니다.
+## 📈 전체 구조 (ERD)
 
 ```
-[ rooms ] 1 -- (room_code로 연결) -- * [ users ]
-                                          |
-                                          +--* [ drink_records ]  (1:N)
-                                          |
-                                          +--* [ reaction_tests ] (1:N)
+[ rooms ] 1--N [ users ] 1--N [ drink_records ]
+                       1--N [ reaction_tests ]
 ```
 
----
-
-이 문서는 `gph` 데이터베이스의 테이블 구조를 상세히 설명합니다.
-
-- **PRI**: Primary Key (기본 키), 각 행(row)의 고유 식별자입니다.
-- **UNI**: Unique Key (고유 키), 중복될 수 없는 값입니다.
-- **MUL**: Multiple Key (외래 키, Foreign Key), 다른 테이블의 행을 참조하는 인덱스입니다.
+-   하나의 **방(`rooms`)**에는 여러 명의 **사용자(`users`)**가 참여할 수 있습니다.
+-   한 명의 **사용자(`users`)**는 여러 개의 **음주 기록(`drink_records`)**과 **반응 속도 테스트 기록(`reaction_tests`)**을 가질 수 있습니다.
 
 ---
 
-## 1. `users` 테이블
+## 🗂️ 테이블 명세
 
-사용자 정보를 저장합니다.
+### 1. `rooms`
 
-| Field                 | Type          | Null | Key | Default | Extra          | 설명                       |
-| --------------------- | ------------- | ---- | --- | ------- | -------------- | -------------------------- |
-| `id`                  | bigint        | NO   | PRI | NULL    | auto_increment | 사용자 고유 ID (기본 키)   |
-| `room_code`           | varchar(255)  | NO   |     | NULL    |                | 참가한 방의 코드           |
-| `character_level`     | varchar(255)  | YES  |     | NULL    |                | 캐릭터 레벨                |
-| `final_rank`          | int           | YES  |     | NULL    |                | 최종 랭킹                  |
-| `finished_at`         | datetime(6)   | YES  |     | NULL    |                | 게임 종료 시간             |
-| `funny_description`   | varchar(1000) | YES  |     | NULL    |                | 웃긴 설명 (캐릭터)         |
-| `glass_per_hour`      | double        | YES  |     | NULL    |                | 시간당 마신 잔 수          |
-| `joined_at`           | datetime(6)   | NO   |     | NULL    |                | 방 참가 시간               |
-| `total_soju_equivalent` | double      | NO   |     | NULL    |                | 총 소주 환산량             |
-| `user_name`           | varchar(255)  | NO   |     | NULL    |                | 사용자 이름                |
+술 게임이 진행되는 '방' 정보를 저장합니다.
 
----
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | BIGINT | PK, Auto-increment | 방의 고유 식별자 |
+| `room_code` | VARCHAR(4) | Not Null, Unique | 방 참여를 위한 4자리 코드 |
+| `room_name` | VARCHAR(255) | Not Null | 방 이름 (사용자 지정 또는 AI 생성) |
+| `status` | VARCHAR(255) | Not Null | 방의 현재 상태 (`WAITING`, `PLAYING`, `FINISHED`) |
+| `created_at` | TIMESTAMP | Not Null | 방 생성 시간 |
+| `ended_at` | TIMESTAMP | | 방 종료 시간 (종료 시 기록) |
 
-## 2. `rooms` 테이블
+### 2. `users`
 
-게임 방 정보를 저장합니다.
+방에 참여한 '사용자' 정보를 저장합니다.
 
-| Field      | Type         | Null | Key | Default | Extra          | 설명                                   |
-| ---------- | ------------ | ---- | --- | ------- | -------------- | -------------------------------------- |
-| `id`       | bigint       | NO   | PRI | NULL    | auto_increment | 방 고유 ID (기본 키)                   |
-| `room_code`| varchar(4)   | NO   | UNI | NULL    |                | 방 참가 코드 (중복 불가)               |
-| `room_name`| varchar(255) | NO   |     | NULL    |                | 방 이름                                |
-| `created_at` | datetime(6)  | NO   |     | NULL    |                | 방 생성 시간                           |
-| `ended_at` | datetime(6)  | YES  |     | NULL    |                | 방 종료 시간                           |
-| `status`   | int          | NO   |     | 0       |                | 방 상태 (0: 대기, 1: 진행, 2: 종료) |
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | BIGINT | PK, Auto-increment | 사용자의 고유 식별자 |
+| `room_id` | BIGINT | FK (rooms.id) | 참여한 방의 ID |
+| `user_name` | VARCHAR(255) | Not Null | 사용자 닉네임 |
+| `joined_at` | TIMESTAMP | Not Null | 방에 참여한 시간 |
+| `finished_at` | TIMESTAMP | | 사용자가 개인적으로 게임을 종료한 시간 |
+| `total_soju_equivalent` | DOUBLE | Not Null | 해당 사용자의 총 소주 환산량 |
+| `character_level` | INT | | 캐릭터 레벨 (0~4) |
 
----
+### 3. `drink_records`
 
-## 3. `drink_records` 테이블
+사용자가 '술을 마실 때마다'의 기록을 저장합니다.
 
-사용자의 음주 기록을 저장합니다. 한 명의 유저는 여러 개의 음주 기록을 가질 수 있습니다.
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | BIGINT | PK, Auto-increment | 음주 기록의 고유 식별자 |
+| `user_id` | BIGINT | FK (users.id) | 기록을 남긴 사용자의 ID |
+| `drink_type` | VARCHAR(255) | Not Null | 마신 술의 종류 (`SOJU`, `BEER` 등) |
+| `glass_count` | INT | Not Null | 한 번에 마신 잔 수 |
+| `soju_equivalent` | DOUBLE | Not Null | 마신 양을 소주 기준으로 환산한 값 |
+| `recorded_at` | TIMESTAMP | Not Null | 기록이 등록된 시간 |
 
-| Field           | Type                                                  | Null | Key | Default | Extra          | 설명                                                 |
-| --------------- | ----------------------------------------------------- | ---- | --- | ------- | -------------- | ---------------------------------------------------- |
-| `id`            | bigint                                                | NO   | PRI | NULL    | auto_increment | 음주 기록 ID (기본 키)                               |
-| `drink_type`    | enum('SOJU','BEER','SOMAEK','MAKGEOLLI','FRUIT_SOJU') | NO   |     | NULL    |                | 주종                                                 |
-| `glass_count`   | int                                                   | NO   |     | NULL    |                | 마신 잔 수                                           |
-| `recorded_at`   | datetime(6)                                           | NO   |     | NULL    |                | 기록 시간                                            |
-| `soju_equivalent` | double                                              | NO   |     | NULL    |                | 소주 환산량                                          |
-| `user_id`       | bigint                                                | NO   | MUL | NULL    |                | `users` 테이블 ID (FK). 1:N 관계를 형성합니다. |
+### 4. `reaction_tests`
 
----
+사용자가 '반응 속도 게임'을 했을 때의 기록을 저장합니다.
 
-## 4. `reaction_tests` 테이블
-
-사용자의 반응 속도 테스트 결과를 저장합니다. 한 명의 유저는 여러 개의 테스트 결과를 가질 수 있습니다.
-
-| Field            | Type        | Null | Key | Default | Extra          | 설명                                                 |
-| ---------------- | ----------- | ---- | --- | ------- | -------------- | ---------------------------------------------------- |
-| `id`             | bigint      | NO   | PRI | NULL    | auto_increment | 테스트 결과 ID (기본 키)                             |
-| `reaction_time_ms` | int         | NO   |     | NULL    |                | 반응 속도 (밀리초)                                   |
-| `tested_at`      | datetime(6) | NO   |     | NULL    |                | 테스트 시간                                            |
-| `user_id`        | bigint      | NO   | MUL | NULL    |                | `users` 테이블 ID (FK). 1:N 관계를 형성합니다. |
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | BIGINT | PK, Auto-increment | 반응 속도 테스트 기록의 고유 식별자 |
+| `user_id` | BIGINT | FK (users.id) | 테스트를 진행한 사용자의 ID |
+| `reaction_time_ms` | INT | Not Null | 반응하는 데 걸린 시간 (밀리초) |
+| `tested_at` | TIMESTAMP | Not Null | 테스트를 진행한 시간 |

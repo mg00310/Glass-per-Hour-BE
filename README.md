@@ -20,11 +20,58 @@
 
 - **Framework**: Spring Boot 3.2.0
 - **Language**: Java 17
-- **Database**: H2 (인메모리, 개발용)
+- **Database**: H2 (인메모리, 개발용) / MySQL
 - **Real-time**: WebSocket + STOMP
 - **AI**: Google Gemini API
 - **Build Tool**: Gradle 8.5
 - **ORM**: Spring Data JPA / Hibernate
+
+## 🗄️ 데이터베이스 설정 (H2 / MySQL)
+
+이 프로젝트는 빠른 개발 및 테스트를 위해 기본적으로 **H2 인메모리 데이터베이스**를 사용하도록 설정되어 있습니다. H2는 애플리케이션을 실행할 때 메모리에서 동작하므로 별도의 데이터베이스 설치가 필요 없습니다.
+
+실제 운영 환경이나 로컬에 데이터를 영구적으로 저장하고 싶다면 **MySQL**로 전환할 수 있습니다.
+
+### MySQL로 전환하는 방법
+
+1.  **`build.gradle` 파일 수정**
+    -   H2 의존성을 주석 처리하고 MySQL 의존성의 주석을 해제합니다.
+    ```gradle
+    // H2 Database
+    // runtimeOnly 'com.h2database:h2'
+
+    // MySQL Database
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    ```
+
+2.  **`src/main/resources/application.yml` 파일 수정**
+    -   파일 상단의 H2 설정을 주석 처리합니다.
+    -   파일 하단에 주석 처리된 MySQL 설정을 활성화(주석 해제)합니다.
+
+    ```yaml
+    # ===============================================
+    # H2 (In-memory Database) Configuration (주석 처리)
+    # ===============================================
+    # spring:
+    #   ... (H2 설정)
+
+    # ===============================================
+    # MySQL Configuration (활성화)
+    # ===============================================
+    spring:
+      ... (MySQL 설정)
+    ```
+
+3.  **MySQL 정보 입력**
+    -   활성화된 MySQL 설정에서 `url`, `username`, `password`를 자신의 로컬 MySQL 환경에 맞게 수정해야 합니다.
+    -   `url`의 `gph`는 실제 생성한 데이터베이스(스키마) 이름으로 변경해야 합니다.
+
+4.  **MySQL 서버 실행**
+    -   Spring Boot 애플리케이션을 실행하기 전에 로컬 MySQL 서버가 실행 중인지 확인하세요.
+
+### H2로 다시 전환하는 방법
+
+- 위의 과정을 반대로 수행하면 됩니다. (`build.gradle`과 `application.yml`에서 MySQL 설정을 주석 처리하고 H2 설정을 활성화합니다.)
 
 ## 📁 프로젝트 구조
 
