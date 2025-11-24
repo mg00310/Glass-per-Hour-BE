@@ -78,31 +78,34 @@ public class RoomService {
      * 방 참여
      */
     public JoinRoomResponse joinRoom(JoinRoomRequest request) {
-        Room room = roomRepository.findByRoomCode(request.getRoomCode())
-                .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다: " + request.getRoomCode()));
+        try {
+            Room room = roomRepository.findByRoomCode(request.getRoomCode())
+                    .orElseThrow(() -> new IllegalArgumentException("방을 찾을 수 없습니다: " + request.getRoomCode()));
 
-        if (room.isEnded()) {
-            throw new IllegalStateException("이미 종료된 방입니다.");
+            if (room.isEnded()) {
+                throw new IllegalStateException("이미 종료된 방입니다.");
+            }
+
+            // 사용자 생성
+            User user = User.builder()
+                    .userName(request.getUserName())
+                    .roomCode(room.getRoomCode())
+                    .totalSojuEquivalent(0.0)
+                    .build();
+
+            user = userRepository.save(user);
+            logger.info("User {} joined room {}", request.getUserName(), request.getRoomCode());
+
+            return JoinRoomResponse.builder()
+                    .userId(user.getId())
+                    .userName(user.getUserName())
+                    .roomCode(room.getRoomCode())
+                    .roomName(room.getRoomName())
+                    .build();
+        } catch (Exception e) {
+            logger.error("Failed to join room: {}", e.getMessage(), e);
+            throw e;
         }
-
-        // 사용자 생성
-        User user = User.builder()
-                .userName(request.getUserName())
-                .roomCode(room.getRoomCode())
-                .totalSojuEquivalent(0.0)
-                .build();
-
-        user = userRepository.save(user);
-        logger.info("User {} joined room {}", request.getUserName(), request.getRoomCode());
-
-        return JoinRoomResponse.builder()
-                .userId(user.getId())
-                .userName(user.getUserName())
-
-                .roomCode(room.getRoomCode())
-                .roomName(room.getRoomName())
-                
-                .build();
     }
 
     /**

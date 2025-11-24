@@ -28,12 +28,12 @@
 | **방 생성** | `POST` | `/api/rooms` | 방을 생성하고 호스트 사용자를 자동으로 만든다. AI가 방 이름을 생성한다 (옵션). |
 | **방 참여** | `POST` | `/api/rooms/join` | 방 코드(`roomCode`)와 사용자 이름(`userName`)을 받아 방에 참여한다. |
 | **방 조회** | `GET` | `/api/rooms/{roomCode}` | 방 코드로 방 정보를 조회한다. |
-| **방 종료** | `POST` | `/api/rooms/{roomId}/end` | 방을 종료하고 모든 사용자를 마감한다. |
+| **방 종료** | `POST` | `/api/rooms/{roomCode}/end` | 방을 종료하고 모든 사용자를 마감한다. |
 | **잔 추가** | `POST` | `/api/users/{userId}/drinks` | 사용자가 마신 술 종류와 잔 수를 기록한다. |
 | **반응 속도 기록** | `POST` | `/api/users/{userId}/reaction` | 사용자의 반응 속도(ms)를 기록한다. |
 | **개인 종료** | `POST` | `/api/users/{userId}/finish` | 사용자를 방에서 퇴장시키고 최종 결과를 계산한다. |
 | **개인 결과 조회** | `GET` | `/api/results/user/{userId}` | 사용자의 최종 결과(시속 잔, 캐릭터, AI 설명 등)를 반환한다. |
-| **방 전체 순위 조회** | `GET` | `/api/results/room/{roomId}/ranking` | 방에 속한 모든 사용자의 순위와 점수를 반환한다. |
+| **방 전체 순위 조회** | `GET` | `/api/results/room/{roomCode}/ranking` | 방에 속한 모든 사용자의 순위와 점수를 반환한다. |
 | **WebSocket 연결** | `ws` | `/ws` | STOMP 기반 실시간 이벤트 전송 (잔 추가, 순위 업데이트, 반응 속도, 방 종료 등). |
 
 ---
@@ -127,7 +127,7 @@ public class AddDrinkRequest {
 public class AddDrinkResponse {
     private Double totalSojuEquivalent; // 누적 소주 환산량
     private Double glassPerHour;        // 현재 시속 잔
-    private String characterLevel;      // 술고래·주당·알쓰·다람쥐
+    private Integer characterLevel;      // 0: 일청담 다이버, 1: 술 취한 다람쥐, 2: 지갑은 지킨다, 3: 술고래 후보생, 4: 인간 알코올
 }
 ```
 
@@ -145,7 +145,7 @@ public class AddReactionRequest {
 public class UserResultResponse {
     private Long userId;
     private String userName;
-    private String characterLevel;
+    private Integer characterLevel;
     private Double glassPerHour;
     private Map<DrinkRecord.DrinkType, Integer> totalDrinks;
     private String funnyDescription;   // Gemini AI가 만든 설명
@@ -164,7 +164,7 @@ public class RankingResponse {
     private Integer rank;
     private Double glassPerHour;
     private Double totalSojuEquivalent;
-    private String characterLevel;
+    private Integer characterLevel;
     private Boolean isFinished;
 }
 ```
@@ -281,6 +281,7 @@ public class RankingResponse {
 | **Swagger/OpenAPI** | `springdoc-openapi-ui` 의존성 추가 → `/swagger-ui.html` 로 자동 문서 제공 (선택 사항) |
 
 ---
+
 
 ## 📚 마무리
 

@@ -1,280 +1,290 @@
 {
-  "info": {
-    "name": "Glass Per Hour API",
-    "description": "재미로 보는 주량 측정기 - API 테스트 컬렉션",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080",
-      "type": "string"
-    },
-    {
-      "key": "roomId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "roomCode",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "userId",
-      "value": "",
-      "type": "string"
-    }
-  ],
-  "item": [
-    {
-      "name": "Room Management",
-      "item": [
-        {
-          "name": "1. Create Room (방 생성)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "var jsonData = pm.response.json();",
-                  "pm.collectionVariables.set(\"roomId\", jsonData.roomId);",
-                  "pm.collectionVariables.set(\"roomCode\", jsonData.roomCode);",
-                  "pm.collectionVariables.set(\"userId\", jsonData.hostUserId);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"roomName\": \"\",\n  \"hostName\": \"김태희\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/rooms",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "rooms"]
-            },
-            "description": "새로운 방을 생성합니다. roomName을 비우면 AI가 자동으로 생성합니다."
-          },
-          "response": []
-        },
-        {
-          "name": "2. Join Room (방 참여)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "var jsonData = pm.response.json();",
-                  "pm.collectionVariables.set(\"userId\", jsonData.userId);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"roomCode\": \"{{roomCode}}\",\n  \"userName\": \"임민규\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/rooms/join",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "rooms", "join"]
-            },
-            "description": "4자리 방 코드로 방에 참여합니다."
-          },
-          "response": []
-        },
-        {
-          "name": "3. Get Room Info (방 정보 조회)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/rooms/{{roomCode}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "rooms", "{{roomCode}}"]
-            },
-            "description": "방 코드로 방 정보를 조회합니다."
-          },
-          "response": []
-        },
-        {
-          "name": "4. End Room (방 종료)",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/rooms/{{roomId}}/end",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "rooms", "{{roomId}}", "end"]
-            },
-            "description": "방을 종료합니다."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "User Actions",
-      "item": [
-        {
-          "name": "1. Add Drink - Soju (소주 추가)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"drinkType\": \"SOJU\",\n  \"glassCount\": 2\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/users/{{userId}}/drinks",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "{{userId}}", "drinks"]
-            },
-            "description": "소주 2잔 추가"
-          },
-          "response": []
-        },
-        {
-          "name": "2. Add Drink - Beer (맥주 추가)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"drinkType\": \"BEER\",\n  \"glassCount\": 3\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/users/{{userId}}/drinks",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "{{userId}}", "drinks"]
-            },
-            "description": "맥주 3잔 추가"
-          },
-          "response": []
-        },
-        {
-          "name": "3. Add Drink - Somaek (소맥 추가)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"drinkType\": \"SOMAEK\",\n  \"glassCount\": 1\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/users/{{userId}}/drinks",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "{{userId}}", "drinks"]
-            },
-            "description": "소맥 1잔 추가"
-          },
-          "response": []
-        },
-        {
-          "name": "4. Record Reaction Time (반응 속도 기록)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"reactionTimeMs\": 350\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/users/{{userId}}/reaction",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "{{userId}}", "reaction"]
-            },
-            "description": "반응 속도 350ms 기록"
-          },
-          "response": []
-        },
-        {
-          "name": "5. Finish User (개인 종료)",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/users/{{userId}}/finish",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "{{userId}}", "finish"]
-            },
-            "description": "개인 타이머를 종료합니다."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Results",
-      "item": [
-        {
-          "name": "1. Get User Result (개인 결과)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/results/user/{{userId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "results", "user", "{{userId}}"]
-            },
-            "description": "개인 결과를 조회합니다 (캐릭터, 시속 잔, AI 설명 포함)"
-          },
-          "response": []
-        },
-        {
-          "name": "2. Get Room Ranking (방 순위)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/results/room/{{roomId}}/ranking",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "results", "room", "{{roomId}}", "ranking"]
-            },
-            "description": "방 전체 순위를 조회합니다."
-          },
-          "response": []
-        }
-      ]
-    }
-  ]
+	"info": {
+		"_postman_id": "glass-per-hour-id",
+		"name": "Glass-per-Hour API",
+		"description": "API collection for Glass-per-Hour Backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Room",
+			"item": [
+				{
+					"name": "Create Room",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"roomId\", jsonData.roomId);",
+									"pm.collectionVariables.set(\"roomCode\", jsonData.roomCode);",
+									"pm.collectionVariables.set(\"userId\", jsonData.hostUserId);",
+									"console.log(\"Room Created: \" + jsonData.roomCode + \", Host ID: \" + jsonData.hostUserId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"roomName\": \"\",\n  \"hostName\": \"테스트유저\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/rooms",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rooms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Join Room",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"userId\", jsonData.userId);",
+									"pm.collectionVariables.set(\"roomCode\", jsonData.roomCode);",
+									"pm.collectionVariables.set(\"roomId\", jsonData.roomId);",
+									"console.log(\"Joined Room: \" + jsonData.roomCode + \", User ID: \" + jsonData.userId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"roomCode\": \"1234\",\n  \"userName\": \"참가자\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/rooms/join",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Room Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/rooms/{{roomCode}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{roomCode}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "End Room",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/rooms/{{roomCode}}/end",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{roomCode}}",
+								"end"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Actions",
+			"item": [
+				{
+					"name": "Add Drink",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"drinkType\": \"SOJU\",\n  \"glassCount\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}/drinks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{userId}}",
+								"drinks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Reaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reactionTimeMs\": 350\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}/reaction",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{userId}}",
+								"reaction"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Finish User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}/finish",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{userId}}",
+								"finish"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Results",
+			"item": [
+				{
+					"name": "Get User Result",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/results/user/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"results",
+								"user",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Room Ranking",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/results/room/{{roomCode}}/ranking",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"results",
+								"room",
+								"{{roomCode}}",
+								"ranking"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "roomCode",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "roomId",
+			"value": "",
+			"type": "string"
+		}
+	]
 }

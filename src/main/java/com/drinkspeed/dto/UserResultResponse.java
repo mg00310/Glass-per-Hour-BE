@@ -15,7 +15,7 @@ public class UserResultResponse {
 
     private String userName;
 
-    private String characterLevel;
+    private Integer characterLevel;
 
     private Double glassPerHour;
 

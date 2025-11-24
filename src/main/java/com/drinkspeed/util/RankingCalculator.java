@@ -3,6 +3,7 @@ package com.drinkspeed.util;
 import com.drinkspeed.domain.User;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+
 import com.google.gson.JsonObject;
 import okhttp3.*;
 import org.slf4j.Logger;
@@ -10,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -36,67 +39,120 @@ public class RankingCalculator {
     }
 
     /**
-     * 사용자 캐릭터 레벨 결정
-     * 
-     * @param glassPerHour 시속 잔 수
-     * @return 캐릭터 레벨 (술고래, 주당, 알쓰, 술 취한 다람쥐)
+     * AI를 사용하여 사용자 캐릭터 레벨 결정
      */
-    public String determineCharacterLevel(double glassPerHour) {
-        if (glassPerHour >= 3.0) {
-            return "술고래 🐋";
-        } else if (glassPerHour >= 2.0) {
-            return "주당 🍺";
-        } else if (glassPerHour >= 1.0) {
-            return "알쓰 🥴";
-        } else {
-            return "술 취한 다람쥐 🐿️";
+    public Integer determineCharacterLevel(double glassPerHour, Double avgReactionTime) {
+        final List<String> levels = Arrays.asList(
+                "일청담 다이버", // 0
+                "술 취한 다람쥐", // 1
+                "지갑은 지킨다", // 2
+                "술고래 후보생", // 3
+                "인간 알코올" // 4
+        );
+
+        if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your-gemini-api-key-here")) {
+            logger.warn("Gemini API key not configured. Using fallback for character level.");
+            return getFallbackCharacterLevel(glassPerHour);
         }
+
+        try {
+            String prompt = String.format(
+                    "사용자의 시속 주량은 %.1f잔이고, 평균 반응 속도는 %.0fms입니다. " +
+                            "이 두 가지 데이터를 바탕으로 다음 5개의 레벨 중 가장 적합한 레벨 하나만 골라줘. " +
+                            "레벨 목록: [\"일청담 다이버\", \"술 취한 다람쥐\", \"지갑은 지킨다\", \"술고래 후보생\", \"인간 알코올\"]. " +
+                            "반드시 목록에 있는 이름 중 하나만 골라서 이름만 정확히 출력해줘. 다른 설명은 절대 추가하지 마.",
+                    glassPerHour,
+                    avgReactionTime != null ? avgReactionTime : 2000.0);
+
+            String requestBody = buildGeminiRequest(prompt);
+            Request request = new Request.Builder()
+                    .url(apiUrl + "?key=" + apiKey)
+                    .post(RequestBody.create(requestBody, JSON))
+                    .build();
+
+            try (Response response = client.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    String characterLevelName = parseGeminiResponse(responseBody);
+
+                    if (characterLevelName != null && !characterLevelName.isEmpty()) {
+                        for (int i = 0; i < levels.size(); i++) {
+                            // 응답에 레벨 이름이 포함되어 있는지 확인
+                            if (characterLevelName.contains(levels.get(i))) {
+                                logger.info("Generated character level via Gemini: {} -> {}", characterLevelName, i);
+                                return i;
+                            }
+                        }
+                    }
+                } else {
+                    logger.error("Gemini API Request Failed: Code {}", response.code());
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to generate character level via Gemini API", e);
+        }
+
+        logger.warn("Falling back to simple logic for character level.");
+        return getFallbackCharacterLevel(glassPerHour);
+    }
+
+    private Integer getFallbackCharacterLevel(double glassPerHour) {
+        if (glassPerHour >= 3.0)
+            return 4;
+        if (glassPerHour >= 2.0)
+            return 3;
+        if (glassPerHour >= 1.0)
+            return 2;
+        if (glassPerHour > 0)
+            return 1;
+        return 0;
     }
 
     /**
      * 최종 점수 계산
-     * (총 소주 환산량 × 0.7) + (반응속도 점수 × 0.3)
-     * 
-     * @param totalSojuEquivalent 총 소주 환산량
-     * @param avgReactionTime     평균 반응 속도 (ms)
-     * @return 최종 점수
      */
     public double calculateFinalScore(double totalSojuEquivalent, Double avgReactionTime) {
         double drinkScore = totalSojuEquivalent * 0.7;
-
-        // 반응속도 점수: 빠를수록 높은 점수
         double reactionScore = 0.0;
         if (avgReactionTime != null && avgReactionTime > 0) {
-            // 500ms 이하면 만점(10점), 2000ms 이상이면 0점
-            // 점수 = max(0, 10 - (반응시간 - 500) / 150)
             reactionScore = Math.max(0, 10 - (avgReactionTime - 500) / 150);
         }
-
         return drinkScore + (reactionScore * 0.3);
     }
 
     /**
      * Gemini API를 사용하여 재미있는 결과 설명 생성
-     * 
-     * @param user 사용자 정보
-     * @param rank 순위
-     * @return AI가 생성한 재미있는 설명
      */
-    public String generateFunnyDescription(User user, int rank) {
+    public String generateFunnyDescription(User user, int rank, double glassPerHour) {
+        final List<String> levels = Arrays.asList(
+                "일청담 다이버", // 0
+                "술 취한 다람쥐", // 1
+                "지갑은 지킨다", // 2
+                "술고래 후보생", // 3
+                "인간 알코올" // 4
+        );
+
+        String characterLevelName = "알 수 없음";
+        if (user.getCharacterLevel() != null && user.getCharacterLevel() >= 0
+                && user.getCharacterLevel() < levels.size()) {
+            characterLevelName = levels.get(user.getCharacterLevel());
+        }
+
         if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your-gemini-api-key-here")) {
             logger.warn("Gemini API key not configured. Using fallback description.");
-            return generateFallbackDescription(user, rank);
+            return generateFallbackDescription(user, rank, glassPerHour);
         }
 
         try {
             String prompt = String.format(
-                    "사용자 '%s'님의 술자리 결과를 재미있게 요약해줘. " +
-                            "순위: %d등, 시속 잔: %.1f잔, 캐릭터: %s, 총 소주 환산: %.1f잔. " +
-                            "2-3문장으로 유머러스하게 작성해줘. 술자리 분위기에 맞게!",
+                    "사용자 '%s'님의 술자리 결과를 재미있고 창의적으로 요약해줘. " +
+                            "이 사용자의 최종 순위는 %d등이고, 캐릭터 레벨은 '%s'이며, 시간당 소주 %.1f잔을 마셨어. 총 소주 환산량은 %.1f잔이야." +
+                            "이 정보를 바탕으로, 사용자의 노고를 치하하고 다음에도 술자리를 함께하고 싶게 만드는, 유머러스한 2-3문장의 한 줄 평을 만들어줘." +
+                            "반드시 한글로 작성하고, 한 줄 평만 출력해줘.",
                     user.getUserName(),
                     rank,
-                    user.getGlassPerHour() != null ? user.getGlassPerHour() : 0.0,
-                    user.getCharacterLevel() != null ? user.getCharacterLevel() : "알쓰",
+                    characterLevelName,
+                    glassPerHour,
                     user.getTotalSojuEquivalent());
 
             String requestBody = buildGeminiRequest(prompt);
@@ -114,13 +170,15 @@ public class RankingCalculator {
                         logger.info("Generated description via Gemini for user: {}", user.getUserName());
                         return description.trim();
                     }
+                } else {
+                    logger.error("Gemini API Request Failed for description: Code {}", response.code());
                 }
             }
         } catch (Exception e) {
             logger.error("Failed to generate description via Gemini API", e);
         }
 
-        return generateFallbackDescription(user, rank);
+        return generateFallbackDescription(user, rank, glassPerHour);
     }
 
     /**
@@ -172,25 +230,7 @@ public class RankingCalculator {
         return null;
     }
 
-    /**
-     * API 호출 실패 시 폴백 설명 생성
-     */
-    private String generateFallbackDescription(User user, int rank) {
-        String characterLevel = user.getCharacterLevel() != null ? user.getCharacterLevel() : "알쓰";
-        double glassPerHour = user.getGlassPerHour() != null ? user.getGlassPerHour() : 0.0;
-
-        if (rank == 1) {
-            return String.format("%s님, 오늘의 진정한 술고래! 시속 %.1f잔의 전설적인 페이스를 기록하셨습니다. 내일 간 건강 챙기세요! 🏆",
-                    user.getUserName(), glassPerHour);
-        } else if (characterLevel.contains("술고래")) {
-            return String.format("%s님은 %d등으로 훌륭한 주량을 보여주셨어요! 시속 %.1f잔, 역시 술고래답습니다! 🐋",
-                    user.getUserName(), rank, glassPerHour);
-        } else if (characterLevel.contains("주당")) {
-            return String.format("%s님, %d등 달성! 시속 %.1f잔으로 주당의 면모를 유감없이 발휘하셨습니다. 👍",
-                    user.getUserName(), rank, glassPerHour);
-        } else {
-            return String.format("%s님, %d등으로 완주하셨어요! 시속 %.1f잔으로 건강하게 즐기셨네요. 이 페이스가 좋습니다! 😊",
-                    user.getUserName(), rank, glassPerHour);
-        }
+    private String generateFallbackDescription(User user, int rank, double glassPerHour) {
+        return String.format("수고하셨습니다! %s님은 %d등입니다. (시속 %.1f잔)", user.getUserName(), rank, glassPerHour);
     }
 }

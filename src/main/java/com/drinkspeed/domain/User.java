@@ -25,8 +25,6 @@ public class User {
     @Column(nullable = false)
     private String roomCode;
 
-    
-
     @Column(nullable = false)
     private LocalDateTime joinedAt;
 
@@ -38,18 +36,7 @@ public class User {
     private Double totalSojuEquivalent = 0.0;
 
     @Column
-    private Double glassPerHour;
-
-    @Column
-    private Integer finalRank;
-
-    @Column
-    private String characterLevel;
-
-    @Column(length = 1000)
-    private String funnyDescription;
-
-    
+    private Integer characterLevel;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

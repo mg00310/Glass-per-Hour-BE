@@ -18,11 +18,11 @@ public class ResultController {
 
     /**
      * 개인 결과 조회
-     * GET /api/results/room/{roomCode}/user/{userId}
+     * GET /api/results/user/{userId}
      */
-    @GetMapping("/room/{roomCode}/user/{userId}")
-    public ResponseEntity<UserResultResponse> getUserResult(@PathVariable String roomCode, @PathVariable Long userId) {
-        UserResultResponse response = resultService.getUserResult(roomCode, userId);
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<UserResultResponse> getUserResult(@PathVariable Long userId) {
+        UserResultResponse response = resultService.getUserResult(userId);
         return ResponseEntity.ok(response);
     }
 
