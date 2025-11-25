@@ -19,4 +19,6 @@ public class DrinkAddResponse {
     private Double sojuEquivalent;
 
     private Double totalSojuEquivalent;
+
+    private Integer characterLevel;
 }

@@ -40,18 +40,12 @@
 
 사용자 정보를 저장합니다.
 
-| Field                 | Type          | Null | Key | Default | Extra          | 설명                       |
-| --------------------- | ------------- | ---- | --- | ------- | -------------- | -------------------------- |
-| `id`                  | bigint        | NO   | PRI | NULL    | auto_increment | 사용자 고유 ID (기본 키)   |
-| `room_code`           | varchar(255)  | NO   |     | NULL    |                | 참가한 방의 코드           |
-| `character_level`     | varchar(255)  | YES  |     | NULL    |                | 캐릭터 레벨                |
-| `final_rank`          | int           | YES  |     | NULL    |                | 최종 랭킹                  |
-| `finished_at`         | datetime(6)   | YES  |     | NULL    |                | 게임 종료 시간             |
-| `funny_description`   | varchar(1000) | YES  |     | NULL    |                | 웃긴 설명 (캐릭터)         |
-| `glass_per_hour`      | double        | YES  |     | NULL    |                | 시간당 마신 잔 수          |
-| `joined_at`           | datetime(6)   | NO   |     | NULL    |                | 방 참가 시간               |
-| `total_soju_equivalent` | double      | NO   |     | NULL    |                | 총 소주 환산량             |
 | `user_name`           | varchar(255)  | NO   |     | NULL    |                | 사용자 이름                |
+| `room_code`           | varchar(255)  | NO   |     | NULL    |                | 참가한 방의 코드           |
+| `total_soju_equivalent` | double      | NO   |     | NULL    |                | 총 소주 환산량             |
+| `character_level`     | int           | YES  |     | NULL    |                | 캐릭터 레벨 (0~4)          |
+| `joined_at`           | datetime(6)   | NO   |     | NULL    |                | 방 참가 시간               |
+| `finished_at`         | datetime(6)   | YES  |     | NULL    |                | 게임 종료 시간             |
 
 ---
 
@@ -61,7 +55,7 @@
 
 | Field      | Type         | Null | Key | Default | Extra          | 설명                                   |
 | ---------- | ------------ | ---- | --- | ------- | -------------- | -------------------------------------- |
-| `id`       | bigint       | NO   | PRI | NULL    | auto_increment | 방 고유 ID (기본 키)                   |
+
 | `room_code`| varchar(4)   | NO   | UNI | NULL    |                | 방 참가 코드 (중복 불가)               |
 | `room_name`| varchar(255) | NO   |     | NULL    |                | 방 이름                                |
 | `created_at` | datetime(6)  | NO   |     | NULL    |                | 방 생성 시간                           |

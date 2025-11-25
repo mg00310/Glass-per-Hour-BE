@@ -19,7 +19,7 @@ public class RankingResponse {
 
     private Double totalSojuEquivalent;
 
-    private String characterLevel;
+    private Integer characterLevel;
 
     private Boolean isFinished;
 }

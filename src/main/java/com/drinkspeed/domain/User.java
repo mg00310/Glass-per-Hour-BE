@@ -25,8 +25,6 @@ public class User {
     @Column(nullable = false)
     private String roomCode;
 
-    
-
     @Column(nullable = false)
     private LocalDateTime joinedAt;
 
@@ -38,25 +36,19 @@ public class User {
     private Double totalSojuEquivalent = 0.0;
 
     @Column
-    private Double glassPerHour;
+    private Integer characterLevel;
 
-    @Column
-    private Integer finalRank;
-
-    @Column
-    private String characterLevel;
-
-    @Column(length = 1000)
-    private String funnyDescription;
-
-    
+    @Column(columnDefinition = "TEXT")
+    private String aiMessage;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<DrinkRecord> drinkRecords = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<ReactionTest> reactionTests = new ArrayList<>();
 
     @PrePersist

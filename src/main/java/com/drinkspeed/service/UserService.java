@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Async;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -24,130 +25,159 @@ import java.time.LocalDateTime;
 @Transactional
 public class UserService {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+        private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    private final UserRepository userRepository;
-    private final DrinkRecordRepository drinkRecordRepository;
-    private final ReactionTestRepository reactionTestRepository;
-    private final AlcoholCalculator alcoholCalculator;
-    private final RankingCalculator rankingCalculator;
+        private final UserRepository userRepository;
+        private final DrinkRecordRepository drinkRecordRepository;
+        private final ReactionTestRepository reactionTestRepository;
+        private final AlcoholCalculator alcoholCalculator;
+        private final RankingCalculator rankingCalculator;
+        private final GeminiService geminiService;
 
-    /**
-     * 잔 추가
-     */
-    public DrinkAddResponse addDrink(DrinkAddRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + request.getUserId()));
+        /**
+         * 잔 추가
+         */
+        public DrinkAddResponse addDrink(DrinkAddRequest request) {
+                User user = userRepository.findById(request.getUserId())
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "사용자를 찾을 수 없습니다: " + request.getUserId()));
 
-        // 소주 환산량 계산
-        double sojuEquivalent = alcoholCalculator.calculateSojuEquivalent(
-                request.getDrinkType(),
-                request.getGlassCount());
+                // 소주 환산량 계산
+                double sojuEquivalent = alcoholCalculator.calculateSojuEquivalent(
+                                request.getDrinkType(),
+                                request.getGlassCount());
 
-        // 잔 기록 저장
-        DrinkRecord record = DrinkRecord.builder()
-                .user(user)
-                .drinkType(request.getDrinkType())
-                .glassCount(request.getGlassCount())
-                .sojuEquivalent(sojuEquivalent)
-                .build();
+                // 잔 기록 저장
+                DrinkRecord record = DrinkRecord.builder()
+                                .user(user)
+                                .drinkType(request.getDrinkType())
+                                .glassCount(request.getGlassCount())
+                                .sojuEquivalent(sojuEquivalent)
+                                .build();
 
-        drinkRecordRepository.save(record);
+                drinkRecordRepository.save(record);
 
-        // 사용자의 총 소주 환산량 업데이트
-        user.setTotalSojuEquivalent(user.getTotalSojuEquivalent() + sojuEquivalent);
+                // 사용자의 총 소주 환산량 업데이트
+                user.setTotalSojuEquivalent(user.getTotalSojuEquivalent() + sojuEquivalent);
 
-        // 시속 잔 수 계산
-        updateGlassPerHour(user);
+                // 시속 잔 수 계산 및 캐릭터 레벨 업데이트
+                double glassPerHour = calculateGlassPerHour(user);
+                Double avgReactionTime = reactionTestRepository.findAvgReactionTimeByUserId(user.getId());
+                updateCharacterLevel(user, glassPerHour, avgReactionTime);
 
-        // 캐릭터 레벨 업데이트
-        updateCharacterLevel(user);
+                userRepository.save(user);
 
-        userRepository.save(user);
+                logger.info("User {} added {} glasses of {} (soju equiv: {})",
+                                user.getUserName(), request.getGlassCount(), request.getDrinkType(), sojuEquivalent);
 
-        logger.info("User {} added {} glasses of {} (soju equiv: {})",
-                user.getUserName(), request.getGlassCount(), request.getDrinkType(), sojuEquivalent);
-
-        return DrinkAddResponse.builder()
-                .userId(user.getId())
-                .drinkType(request.getDrinkType())
-                .glassCount(request.getGlassCount())
-                .sojuEquivalent(sojuEquivalent)
-                .totalSojuEquivalent(user.getTotalSojuEquivalent())
-                .build();
-    }
-
-    /**
-     * 반응 속도 기록
-     */
-    public void recordReactionTest(Long userId, Integer reactionTimeMs) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-
-        ReactionTest test = ReactionTest.builder()
-                .user(user)
-                .reactionTimeMs(reactionTimeMs)
-                .build();
-
-        reactionTestRepository.save(test);
-
-        logger.info("User {} recorded reaction time: {}ms", user.getUserName(), reactionTimeMs);
-    }
-
-    /**
-     * 개인 타이머 종료
-     */
-    public void finishUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-
-        user.finish();
-        updateGlassPerHour(user);
-        updateCharacterLevel(user);
-
-        userRepository.save(user);
-
-        logger.info("User {} finished drinking session", user.getUserName());
-    }
-
-    /**
-     * 시속 잔 수 계산 및 업데이트
-     */
-    private void updateGlassPerHour(User user) {
-        LocalDateTime startTime = user.getJoinedAt();
-        LocalDateTime endTime = user.getFinishedAt() != null ? user.getFinishedAt() : LocalDateTime.now();
-
-        Duration duration = Duration.between(startTime, endTime);
-        double hours = duration.toMinutes() / 60.0;
-
-        // 최소 6분 (0.1시간)은 경과해야 의미있는 시속 계산
-        if (hours < 0.1) {
-            hours = 0.1;
+                return DrinkAddResponse.builder()
+                                .userId(user.getId())
+                                .drinkType(request.getDrinkType())
+                                .glassCount(request.getGlassCount())
+                                .sojuEquivalent(sojuEquivalent)
+                                .totalSojuEquivalent(user.getTotalSojuEquivalent())
+                                .characterLevel(user.getCharacterLevel())
+                                .build();
         }
 
-        double glassPerHour = alcoholCalculator.calculateGlassPerHour(
-                user.getTotalSojuEquivalent(),
-                hours);
+        /**
+         * 반응 속도 기록
+         */
+        public void recordReactionTest(Long userId, Integer reactionTimeMs) {
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
 
-        user.setGlassPerHour(glassPerHour);
-    }
+                ReactionTest test = ReactionTest.builder()
+                                .user(user)
+                                .reactionTimeMs(reactionTimeMs)
+                                .build();
 
-    /**
-     * 캐릭터 레벨 업데이트
-     */
-    private void updateCharacterLevel(User user) {
-        if (user.getGlassPerHour() != null) {
-            String characterLevel = rankingCalculator.determineCharacterLevel(user.getGlassPerHour());
-            user.setCharacterLevel(characterLevel);
+                reactionTestRepository.save(test);
+
+                logger.info("User {} recorded reaction time: {}ms", user.getUserName(), reactionTimeMs);
         }
-    }
 
-    /**
-     * 사용자 조회
-     */
-    @Transactional(readOnly = true)
-    public User getUser(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
-    }
+        /**
+         * 개인 타이머 종료
+         */
+        public User finishUser(Long userId) {
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+
+                user.finish();
+                double glassPerHour = calculateGlassPerHour(user);
+                Double avgReactionTime = reactionTestRepository.findAvgReactionTimeByUserId(user.getId());
+                updateCharacterLevel(user, glassPerHour, avgReactionTime);
+
+                userRepository.save(user);
+
+                logger.info("User {} finished drinking session", user.getUserName());
+
+                return user;
+        }
+
+        /**
+         * 시속 잔 수 계산 및 업데이트
+         */
+        public double calculateGlassPerHour(User user) {
+                LocalDateTime startTime = user.getJoinedAt();
+                LocalDateTime endTime = user.getFinishedAt() != null ? user.getFinishedAt() : LocalDateTime.now();
+
+                Duration duration = Duration.between(startTime, endTime);
+                double hours = duration.toMinutes() / 60.0;
+
+                // 최소 6분 (0.1시간)은 경과해야 의미있는 시속 계산
+                if (hours < 0.1) {
+                        hours = 0.1;
+                }
+
+                return alcoholCalculator.calculateGlassPerHour(
+                                user.getTotalSojuEquivalent(),
+                                hours);
+        }
+
+        /**
+         * 캐릭터 레벨 업데이트
+         */
+        private void updateCharacterLevel(User user, double glassPerHour, Double avgReactionTime) {
+                Integer characterLevel = rankingCalculator.determineCharacterLevel(glassPerHour, avgReactionTime);
+                user.setCharacterLevel(characterLevel);
+        }
+
+        /**
+         * 사용자 조회
+         */
+        @Transactional(readOnly = true)
+        public User getUser(Long userId) {
+                return userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+        }
+
+        /**
+         * AI 메시지 비동기 생성 및 저장
+         */
+        @Async
+        @Transactional
+        public void generateAndSaveAiMessage(Long userId) {
+                User user = userRepository.findById(userId).orElse(null);
+                if (user == null)
+                        return;
+
+                try {
+                        long durationSeconds = Duration.between(user.getJoinedAt(), user.getFinishedAt()).getSeconds();
+                        String message = geminiService.generateDrinkingResultMessage(
+                                        user.getUserName(),
+                                        (int) durationSeconds,
+                                        user.getTotalSojuEquivalent(),
+                                        user.getCharacterLevel() != null ? user.getCharacterLevel() : 0);
+
+                        user.setAiMessage(message);
+                        userRepository.save(user);
+                        logger.info("Async AI message generated and saved for user: {}", user.getUserName());
+                } catch (Exception e) {
+                        logger.error("Error generating AI message asynchronously", e);
+                        user.setAiMessage("AI 분석에 실패했습니다.");
+                        userRepository.save(user);
+                }
+        }
 }

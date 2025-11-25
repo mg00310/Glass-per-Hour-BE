@@ -34,8 +34,8 @@ logging:
 # Gemini API Configuration
 gemini:
   api:
-    key: AIzaSyD-u260Y3vhh_Kni8zmcY-oOg7qms3gYVg
-    url: https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent
+    key: AIzaSyBedu2fJR4VWXfy1KD9LM8QWo1VlQuyr4E
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
 
 # Reaction Game Scheduler
 scheduler:

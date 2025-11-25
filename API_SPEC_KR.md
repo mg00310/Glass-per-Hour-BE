@@ -127,7 +127,7 @@ public class AddDrinkRequest {
 public class AddDrinkResponse {
     private Double totalSojuEquivalent; // 누적 소주 환산량
     private Double glassPerHour;        // 현재 시속 잔
-    private String characterLevel;      // 술고래·주당·알쓰·다람쥐
+    private Integer characterLevel;      // 0: 일청담 다이버, 1: 술 취한 다람쥐, 2: 지갑은 지킨다, 3: 술고래 후보생, 4: 인간 알코올
 }
 ```
 
@@ -164,7 +164,7 @@ public class RankingResponse {
     private Integer rank;
     private Double glassPerHour;
     private Double totalSojuEquivalent;
-    private String characterLevel;
+    private Integer characterLevel;
     private Boolean isFinished;
 }
 ```
@@ -281,6 +281,7 @@ public class RankingResponse {
 | **Swagger/OpenAPI** | `springdoc-openapi-ui` 의존성 추가 → `/swagger-ui.html` 로 자동 문서 제공 (선택 사항) |
 
 ---
+
 
 ## 📚 마무리
 
