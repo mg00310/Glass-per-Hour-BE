@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: glass-per-hour
+
+server:
+  port: 8000
+
+# Logging Configuration
+logging:
+  charset:
+    console: UTF-8
+
+# Gemini API Configuration
+gemini:
+  api:
+    key: AIzaSyBXu2bpP-SkOABY18PMh7EzWoJLa9fg03I
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+
+# Reaction Game Scheduler
+scheduler:
+  reaction-game:
+    interval-hours: 1
+    enabled: true
