@@ -14,7 +14,10 @@ public class CORSConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOriginPatterns("*")
+                        .allowedOrigins(
+                                "http://localhost:3000",
+                                "http://118.218.130.193:3000" // Public IP for mobile access
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
@@ -22,3 +25,4 @@ public class CORSConfig {
         };
     }
 }
+

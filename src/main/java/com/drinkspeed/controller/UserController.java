@@ -1,47 +1,70 @@
 package com.drinkspeed.controller;
 
-import com.drinkspeed.dto.DrinkAddRequest;
-import com.drinkspeed.dto.DrinkAddResponse;
-import com.drinkspeed.dto.ReactionTestResultRequest;
+import com.drinkspeed.domain.User;
 import com.drinkspeed.service.UserService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.drinkspeed.domain.User;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
+    // --- DTOs for Request Bodies ---
+    @Data
+    private static class CreateUserRequest {
+        private String userName;
+    }
+
+    @Data
+    private static class DrinkRequest {
+        private String drinkType;
+        private int glassCount;
+    }
+
+    @Data
+    private static class ReactionRequest {
+        private int reactionTimeMs;
+    }
+
+    /**
+     * 사용자 생성
+     * POST /api/users
+     */
+    @PostMapping("/users")
+    public ResponseEntity<User> createUser(@RequestBody CreateUserRequest request) {
+        User newUser = userService.createUser(request.getUserName());
+        return ResponseEntity.ok(newUser);
+    }
+
     /**
      * 잔 추가
      * POST /api/users/{userId}/drinks
      */
-    @PostMapping("/{userId}/drinks")
-    public ResponseEntity<DrinkAddResponse> addDrink(
+    @PostMapping("/users/{userId}/drinks")
+    public ResponseEntity<User> addDrink(
             @PathVariable Long userId,
-            @RequestBody DrinkAddRequest request) {
-
-        request.setUserId(userId);
-        DrinkAddResponse response = userService.addDrink(request);
-        return ResponseEntity.ok(response);
+            @RequestBody DrinkRequest request) {
+        User updatedUser = userService.addDrink(userId, request.getDrinkType(), request.getGlassCount());
+        return ResponseEntity.ok(updatedUser);
     }
 
     /**
      * 반응 속도 기록
      * POST /api/users/{userId}/reaction
      */
-    @PostMapping("/{userId}/reaction")
+    @PostMapping("/users/{userId}/reaction")
     public ResponseEntity<Void> recordReaction(
             @PathVariable Long userId,
-            @RequestBody ReactionTestResultRequest request) {
-
+            @RequestBody ReactionRequest request) {
         userService.recordReactionTest(userId, request.getReactionTimeMs());
         return ResponseEntity.ok().build();
     }
@@ -50,15 +73,9 @@ public class UserController {
      * 개인 종료
      * POST /api/users/{userId}/finish
      */
-    @PostMapping("/{userId}/finish")
+    @PostMapping("/users/{userId}/finish")
     public ResponseEntity<User> finishUser(@PathVariable Long userId) {
-        // 1. 트랜잭션 내에서 DB 업데이트 (User 반환)
         User user = userService.finishUser(userId);
-
-        // 2. 비동기로 AI 메시지 생성 요청 (결과 기다리지 않음)
-        userService.generateAndSaveAiMessage(userId);
-
-        // 3. 즉시 응답 반환
         return ResponseEntity.ok(user);
     }
 
@@ -66,11 +83,21 @@ public class UserController {
      * AI 메시지 조회 (Polling 용)
      * GET /api/users/{userId}/ai-message
      */
-    @GetMapping("/{userId}/ai-message")
+    @GetMapping("/users/{userId}/ai-message")
     public ResponseEntity<Map<String, String>> getAiMessage(@PathVariable Long userId) {
-        User user = userService.getUser(userId);
+        User user = userService.findUserById(userId);
         Map<String, String> response = new HashMap<>();
         response.put("aiMessage", user.getAiMessage());
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 전체 랭킹 조회
+     * GET /api/rankings
+     */
+    @GetMapping("/rankings")
+    public ResponseEntity<List<User>> getRankings() {
+        List<User> rankings = userService.getRankings();
+        return ResponseEntity.ok(rankings);
     }
 }

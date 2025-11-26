@@ -2,29 +2,8 @@ spring:
   application:
     name: glass-per-hour
 
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    # TODO: 'gph'를 실제 생성한 데이터베이스(스키마) 이름으로 변경하세요.
-    url: jdbc:mysql://localhost:3306/gph?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-    # TODO: 'root'를 실제 MySQL 사용자 이름으로 변경하세요.
-    username: root
-    # TODO: 'password'를 실제 MySQL 비밀번호로 변경하세요.
-    password: 1234
-
-  jpa:
-    hibernate:
-      # 애플리케이션 실행 시 엔티티를 기반으로 테이블을 자동 업데이트합니다.
-      # 'create'로 변경하면 실행 시마다 테이블을 삭제하고 다시 생성합니다.
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-    # MySQL 버전에 맞는 Dialect(방언) 설정
-    database-platform: org.hibernate.dialect.MySQLDialect
-
 server:
-  port: 8080
+  port: 8000
 
 # Logging Configuration
 logging:
@@ -34,7 +13,7 @@ logging:
 # Gemini API Configuration
 gemini:
   api:
-    key: AIzaSyBedu2fJR4VWXfy1KD9LM8QWo1VlQuyr4E
+    key: AIzaSyBXu2bpP-SkOABY18PMh7EzWoJLa9fg03I
     url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
 
 # Reaction Game Scheduler

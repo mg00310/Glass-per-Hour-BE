@@ -1,6 +1,5 @@
 package com.drinkspeed.util;
 
-import com.drinkspeed.domain.DrinkRecord;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,18 +17,19 @@ public class AlcoholCalculator {
 
     /**
      * 술 종류와 잔 수를 기반으로 소주 환산량 계산
-     * 
-     * @param drinkType  술 종류
+     *
+     * @param drinkType  술 종류 (String)
      * @param glassCount 잔 수
      * @return 소주 환산량
      */
-    public double calculateSojuEquivalent(DrinkRecord.DrinkType drinkType, int glassCount) {
-        double rate = switch (drinkType) {
-            case SOJU -> SOJU_RATE;
-            case BEER -> BEER_RATE;
-            case SOMAEK -> SOMAEK_RATE;
-            case MAKGEOLLI -> MAKGEOLLI_RATE;
-            case FRUIT_SOJU -> FRUIT_SOJU_RATE;
+    public double calculateSojuEquivalent(String drinkType, int glassCount) {
+        double rate = switch (drinkType.toUpperCase()) {
+            case "SOJU" -> SOJU_RATE;
+            case "BEER" -> BEER_RATE;
+            case "SOMAEK" -> SOMAEK_RATE;
+            case "MAKGEOLLI" -> MAKGEOLLI_RATE;
+            case "FRUIT_SOJU" -> FRUIT_SOJU_RATE;
+            default -> 0.0; // Or throw an exception for unknown types
         };
 
         return rate * glassCount;
@@ -37,7 +37,7 @@ public class AlcoholCalculator {
 
     /**
      * 시간당 잔 수 계산 (소주 환산 기준)
-     * 
+     *
      * @param totalSojuEquivalent 총 소주 환산량
      * @param durationHours       지속 시간 (시간)
      * @return 시속 잔 수
