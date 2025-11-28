@@ -10,10 +10,10 @@ public class AlcoholCalculator {
      * 소주 1잔(50ml, 도수 17%) 기준
      */
     private static final double SOJU_RATE = 1.0;
-    private static final double BEER_RATE = 0.3; // 맥주 1잔(500ml, 도수 4.5%)
-    private static final double SOMAEK_RATE = 0.65; // 소맥 1잔
-    private static final double MAKGEOLLI_RATE = 0.4; // 막걸리 1잔(300ml, 도수 6%)
-    private static final double FRUIT_SOJU_RATE = 0.7; // 과일소주 1잔(도수 13%)
+    private static final double BEER_RATE = 0.7; // 맥주 1잔
+    private static final double SOMAEK_RATE = 1.3; // 소맥 1잔
+    private static final double MAKGEOLLI_RATE = 0.8; // 막걸리 1잔
+    private static final double FRUIT_SOJU_RATE = 0.5; // 과일소주 1잔
 
     /**
      * 술 종류와 잔 수를 기반으로 소주 환산량 계산
@@ -22,13 +22,13 @@ public class AlcoholCalculator {
      * @param glassCount 잔 수
      * @return 소주 환산량
      */
-    public double calculateSojuEquivalent(String drinkType, int glassCount) {
+    public double calculateSojuEquivalent(String drinkType, double glassCount) {
         double rate = switch (drinkType.toUpperCase()) {
             case "SOJU" -> SOJU_RATE;
             case "BEER" -> BEER_RATE;
             case "SOMAEK" -> SOMAEK_RATE;
             case "MAKGEOLLI" -> MAKGEOLLI_RATE;
-            case "FRUIT_SOJU" -> FRUIT_SOJU_RATE;
+            case "FRUITSOJU", "FRUIT_SOJU" -> FRUIT_SOJU_RATE;
             default -> 0.0; // Or throw an exception for unknown types
         };
 

@@ -20,6 +20,18 @@ public class User {
     @Builder.Default
     private Double totalSojuEquivalent = 0.0;
 
+    // Individual drink counts
+    @Builder.Default
+    private Double sojuCount = 0.0;
+    @Builder.Default
+    private Double beerCount = 0.0;
+    @Builder.Default
+    private Double somaekCount = 0.0;
+    @Builder.Default
+    private Double makgeolliCount = 0.0;
+    @Builder.Default
+    private Double fruitsojuCount = 0.0;
+
     private Integer characterLevel;
     private String aiMessage;
 

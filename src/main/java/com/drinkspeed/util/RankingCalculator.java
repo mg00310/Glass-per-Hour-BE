@@ -20,20 +20,20 @@ public class RankingCalculator {
      * 사용자 캐릭터 레벨 결정 (AI 사용 제거 - Deadlock 방지)
      */
     public Integer determineCharacterLevel(double glassPerHour, Double avgReactionTime) {
-        // AI 호출 제거하고 로직으로만 계산
         return getFallbackCharacterLevel(glassPerHour);
     }
 
     private Integer getFallbackCharacterLevel(double glassPerHour) {
-        if (glassPerHour >= 3.0)
+        // 시속 잔수 기준
+        if (glassPerHour > 8.0) // 8잔/시간 초과
             return 4;
-        if (glassPerHour >= 2.0)
+        if (glassPerHour > 6.0) // 6잔/시간 초과 ~ 8잔/시간 이하
             return 3;
-        if (glassPerHour >= 1.0)
+        if (glassPerHour > 4.0) // 4잔/시간 초과 ~ 6잔/시간 이하
             return 2;
-        if (glassPerHour > 0)
+        if (glassPerHour > 2.0) // 2잔/시간 초과 ~ 4잔/시간 이하
             return 1;
-        return 0;
+        return 0; // 2잔/시간 이하
     }
 
     /**

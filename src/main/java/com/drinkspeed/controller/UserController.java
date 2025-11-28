@@ -27,7 +27,7 @@ public class UserController {
     @Data
     private static class DrinkRequest {
         private String drinkType;
-        private int glassCount;
+        private double glassCount;
     }
 
     @Data

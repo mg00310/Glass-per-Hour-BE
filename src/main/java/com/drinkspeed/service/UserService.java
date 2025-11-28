@@ -50,11 +50,30 @@ public class UserService {
     /**
      * 잔 추가
      */
-    public User addDrink(Long userId, String drinkType, int glassCount) {
+    public User addDrink(Long userId, String drinkType, double glassCount) {
         User user = findUserById(userId);
 
         double sojuEquivalent = alcoholCalculator.calculateSojuEquivalent(drinkType, glassCount);
         user.setTotalSojuEquivalent(user.getTotalSojuEquivalent() + sojuEquivalent);
+
+        // Update individual drink counts
+        switch (drinkType.toUpperCase()) {
+            case "SOJU":
+                user.setSojuCount(user.getSojuCount() + glassCount);
+                break;
+            case "BEER":
+                user.setBeerCount(user.getBeerCount() + glassCount);
+                break;
+            case "SOMAEK":
+                user.setSomaekCount(user.getSomaekCount() + glassCount);
+                break;
+            case "MAKGEOLLI":
+                user.setMakgeolliCount(user.getMakgeolliCount() + glassCount);
+                break;
+            case "FRUITSOJU":
+                user.setFruitsojuCount(user.getFruitsojuCount() + glassCount);
+                break;
+        }
 
         updateCharacterLevel(user);
 
@@ -95,10 +114,6 @@ public class UserService {
 
         Duration duration = Duration.between(startTime, endTime);
         double hours = duration.toMinutes() / 60.0;
-
-        if (hours < 0.1) { // 최소 6분 (0.1시간)은 경과해야 의미있는 시속 계산
-            hours = 0.1;
-        }
 
         return alcoholCalculator.calculateGlassPerHour(user.getTotalSojuEquivalent(), hours);
     }
@@ -143,7 +158,8 @@ public class UserService {
     @Async
     public void generateAndSaveAiMessage(Long userId) {
         User user = findUserById(userId);
-        if (user.getFinishedAt() == null) return;
+        if (user.getFinishedAt() == null)
+            return;
 
         try {
             long durationSeconds = Duration.between(user.getJoinedAt(), user.getFinishedAt()).getSeconds();
