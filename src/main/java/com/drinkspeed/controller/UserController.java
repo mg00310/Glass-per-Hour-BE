@@ -92,6 +92,16 @@ public class UserController {
     }
 
     /**
+     * 사용자 조회 (공유 링크 용)
+     * GET /api/users/{userId}
+     */
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<User> getUser(@PathVariable Long userId) {
+        User user = userService.findUserById(userId);
+        return ResponseEntity.ok(user);
+    }
+
+    /**
      * 전체 랭킹 조회
      * GET /api/rankings
      */
