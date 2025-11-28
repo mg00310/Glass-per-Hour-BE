@@ -113,7 +113,7 @@ public class UserService {
         LocalDateTime endTime = user.getFinishedAt() != null ? user.getFinishedAt() : LocalDateTime.now();
 
         Duration duration = Duration.between(startTime, endTime);
-        double hours = duration.toMinutes() / 60.0;
+        double hours = duration.toSeconds() / 3600.0;
 
         return alcoholCalculator.calculateGlassPerHour(user.getTotalSojuEquivalent(), hours);
     }
