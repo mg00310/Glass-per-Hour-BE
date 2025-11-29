@@ -83,14 +83,7 @@ public class UserService {
         return user;
     }
 
-    /**
-     * 반응 속도 기록
-     */
-    public void recordReactionTest(Long userId, Integer reactionTimeMs) {
-        User user = findUserById(userId);
-        user.getReactionTimes().add(reactionTimeMs);
-        logger.info("User {} recorded reaction time: {}ms", user.getUserName(), reactionTimeMs);
-    }
+    
 
     /**
      * 개인 타이머 종료
@@ -123,12 +116,8 @@ public class UserService {
      */
     private void updateCharacterLevel(User user) {
         double glassPerHour = calculateGlassPerHour(user);
-        Double avgReactionTime = user.getReactionTimes().stream()
-                .mapToInt(val -> val)
-                .average()
-                .orElse(0.0);
 
-        Integer characterLevel = rankingCalculator.determineCharacterLevel(glassPerHour, avgReactionTime);
+        Integer characterLevel = rankingCalculator.determineCharacterLevel(glassPerHour);
         user.setCharacterLevel(characterLevel);
     }
 

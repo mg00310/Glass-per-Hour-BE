@@ -19,7 +19,7 @@ public class RankingCalculator {
     /**
      * 사용자 캐릭터 레벨 결정 (AI 사용 제거 - Deadlock 방지)
      */
-    public Integer determineCharacterLevel(double glassPerHour, Double avgReactionTime) {
+    public Integer determineCharacterLevel(double glassPerHour) {
         return getFallbackCharacterLevel(glassPerHour);
     }
 
@@ -36,17 +36,7 @@ public class RankingCalculator {
         return 0; // 2잔/시간 이하
     }
 
-    /**
-     * 최종 점수 계산
-     */
-    public double calculateFinalScore(double totalSojuEquivalent, Double avgReactionTime) {
-        double drinkScore = totalSojuEquivalent * 0.7;
-        double reactionScore = 0.0;
-        if (avgReactionTime != null && avgReactionTime > 0) {
-            reactionScore = Math.max(0, 10 - (avgReactionTime - 500) / 150);
-        }
-        return drinkScore + (reactionScore * 0.3);
-    }
+    
 
     /**
      * 재미있는 결과 설명 생성 (AI 사용 제거 - Deadlock 방지)

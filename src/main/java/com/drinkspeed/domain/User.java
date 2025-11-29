@@ -35,8 +35,7 @@ public class User {
     private Integer characterLevel;
     private String aiMessage;
 
-    @Builder.Default
-    private List<Integer> reactionTimes = new ArrayList<>();
+    
 
     public void finish() {
         this.finishedAt = LocalDateTime.now();

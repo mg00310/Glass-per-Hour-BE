@@ -1,8 +1,8 @@
-# 📚 Glass‑per‑Hour BE API 명세서 (v2 - In-Memory)
+# 📚 Glass‑per‑Hour BE API 명세서 (v4 - In-Memory)
 
 > **프로젝트 개요**
 > - 데이터베이스 설정 없이 간단히 실행하는 인메모리 기반 주량 측정 백엔드 서비스
-> - 주요 기능: 사용자 생성, 주량 기록, 반응 속도 기록, 전체 랭킹 조회, Gemini AI 기반 결과 설명 생성
+> - 주요 기능: 사용자 생성, 주량 기록, 전체 랭킹 조회, Gemini AI 기반 결과 설명 생성
 
 ---
 
@@ -24,9 +24,9 @@
 |------|-------|-----|------|
 | **사용자 생성** | `POST` | `/api/users` | 닉네임으로 새 사용자를 생성하고 정보를 반환한다. |
 | **주량 기록** | `POST` | `/api/users/{userId}/drinks` | 사용자가 마신 술 종류와 잔 수를 기록한다. |
-| **반응 속도 기록** | `POST` | `/api/users/{userId}/reaction` | 사용자의 반응 속도(ms)를 기록한다. |
 | **측정 종료** | `POST` | `/api/users/{userId}/finish` | 사용자 측정을 종료하고 최종 결과를 계산한다. |
 | **AI 메시지 조회** | `GET` | `/api/users/{userId}/ai-message`| AI가 생성한 결과 메시지를 조회한다. (폴링용) |
+| **사용자 상세 조회** | `GET` | `/api/users/{userId}` | ID로 특정 사용자의 상세 정보를 조회한다. (공유용) |
 | **전체 랭킹 조회** | `GET` | `/api/rankings` | 모든 사용자의 랭킹을 주량 순으로 정렬하여 반환한다. |
 
 ---
@@ -51,13 +51,6 @@
 ```
 - `drinkType`: "SOJU", "BEER", "SOMAEK", "MAKGEOLLI", "FRUIT_SOJU" 중 하나
 
-#### `POST /api/users/{userId}/reaction`
-```json
-{
-  "reactionTimeMs": 250
-}
-```
-
 ### 2️⃣ 응답 (Responses)
 
 #### `User` 객체
@@ -69,10 +62,18 @@ public class User {
     private String userName;
     private LocalDateTime joinedAt;
     private LocalDateTime finishedAt;
+
     private Double totalSojuEquivalent; // 총 소주 환산량
+
+    // 개별 주종별 잔 수
+    private Double sojuCount;
+    private Double beerCount;
+    private Double somaekCount;
+    private Double makgeolliCount;
+    private Double fruitsojuCount;
+
     private Integer characterLevel;     // 캐릭터 레벨
     private String aiMessage;           // AI 분석 메시지
-    private List<Integer> reactionTimes; // 반응 속도 기록 리스트
 }
 ```
 **샘플 응답 (`POST /api/users` 성공 시)**
@@ -83,9 +84,13 @@ public class User {
     "joinedAt": "2023-11-27T10:00:00.000Z",
     "finishedAt": null,
     "totalSojuEquivalent": 0.0,
+    "sojuCount": 0.0,
+    "beerCount": 0.0,
+    "somaekCount": 0.0,
+    "makgeolliCount": 0.0,
+    "fruitsojuCount": 0.0,
     "characterLevel": null,
-    "aiMessage": null,
-    "reactionTimes": []
+    "aiMessage": null
 }
 ```
 
@@ -97,7 +102,7 @@ public class User {
 
 ## 🧭 Gemini AI 연동 상세
 
-- **사용 모델**: `gemini-2.5-flash`
+- **사용 API**: Google Gemini API
 - **트리거**: `POST /api/users/{userId}/finish` API가 호출되면, 비동기적으로 AI 메시지 생성을 요청합니다.
 - **결과 확인**: `GET /api/users/{userId}/ai-message` 를 주기적으로 호출(Polling)하여 `aiMessage` 필드가 채워졌는지 확인해야 합니다.
 
@@ -120,9 +125,10 @@ public class User {
     -   `finishedAt` 시간이 기록되고 최종 `characterLevel`이 계산된 `User` 객체를 응답으로 받는다.
     -   동시에 백그라운드에서는 AI 메시지 생성이 시작된다.
 
-4.  **결과 확인**
+4.  **결과 확인 및 공유**
     -   `GET /api/rankings` 를 호출하여 전체 사용자 순위를 확인한다.
     -   `GET /api/users/1/ai-message` 를 주기적으로 호출하여 AI 분석 메시지를 받아온다.
+    -   결과 페이지 공유가 필요할 경우, `GET /api/users/1` 을 호출하여 해당 사용자의 전체 데이터를 조회할 수 있다.
 
 ---
 

@@ -30,10 +30,7 @@ public class UserController {
         private double glassCount;
     }
 
-    @Data
-    private static class ReactionRequest {
-        private int reactionTimeMs;
-    }
+    
 
     /**
      * 사용자 생성
@@ -57,17 +54,7 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    /**
-     * 반응 속도 기록
-     * POST /api/users/{userId}/reaction
-     */
-    @PostMapping("/users/{userId}/reaction")
-    public ResponseEntity<Void> recordReaction(
-            @PathVariable Long userId,
-            @RequestBody ReactionRequest request) {
-        userService.recordReactionTest(userId, request.getReactionTimeMs());
-        return ResponseEntity.ok().build();
-    }
+    
 
     /**
      * 개인 종료
